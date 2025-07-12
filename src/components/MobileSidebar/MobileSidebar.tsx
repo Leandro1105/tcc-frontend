@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   LayoutDashboard,
   Users,
@@ -15,9 +15,10 @@ import {
   Mail,
   Menu,
   X,
-} from 'lucide-react';
+} from "lucide-react";
+import { api } from "@/lib/api";
 
-type UserRole = 'Psicologo' | 'Paciente';
+type UserRole = "Psicologo" | "Paciente";
 
 interface User {
   id: string;
@@ -27,65 +28,65 @@ interface User {
 
 const allMenuItems = [
   {
-    name: 'Dashboard',
-    href: '/dashboard',
+    name: "Dashboard",
+    href: "/dashboard",
     icon: <LayoutDashboard size={18} />,
-    roles: ['Psicologo', 'Paciente'],
+    roles: ["Psicologo", "Paciente"],
   },
   {
-    name: 'Pacientes',
-    href: '/dashboard/patients',
+    name: "Pacientes",
+    href: "/dashboard/patients",
     icon: <Users size={18} />,
-    roles: ['Psicologo'],
+    roles: ["Psicologo"],
   },
   {
-    name: 'Psicólogos',
-    href: '/dashboard/psychologists',
+    name: "Psicólogos",
+    href: "/dashboard/psychologists",
     icon: <Heart size={18} />,
-    roles: ['Paciente'],
+    roles: ["Paciente"],
   },
   {
-    name: 'Atendimentos',
-    href: '', // será definido dinamicamente
+    name: "Atendimentos",
+    href: "", // será definido dinamicamente
     icon: <CalendarDays size={18} />,
-    roles: ['Psicologo', 'Paciente'],
+    roles: ["Psicologo", "Paciente"],
   },
   {
-    name: 'Atividades',
-    href: '/dashboard/activities',
+    name: "Atividades",
+    href: "/dashboard/activities",
     icon: <Activity size={18} />,
-    roles: ['Paciente'],
+    roles: ["Paciente"],
   },
   {
-    name: 'Humor',
-    href: '/dashboard/mood',
+    name: "Humor",
+    href: "/dashboard/mood",
     icon: <Smile size={18} />,
-    roles: ['Paciente'],
+    roles: ["Paciente"],
   },
   {
-    name: 'Status',
-    href: '/dashboard/patient-status',
+    name: "Status",
+    href: "/dashboard/patient-status",
     icon: <BarChart size={18} />,
-    roles: ['Psicologo'],
+    roles: ["Psicologo"],
   },
   {
-    name: 'Financeiro',
-    href: '/dashboard/financial',
+    name: "Financeiro",
+    href: "/dashboard/financial",
     icon: <Wallet size={18} />,
-    roles: ['Psicologo'],
+    roles: ["Psicologo"],
   },
 ];
 
 const supportInfo = [
-  { 
-    value: '(16) 99999-9999', 
+  {
+    value: "(16) 99763-9921",
     icon: <MessageCircle size={18} />,
-    href: 'https://wa.me/5516999999999'
+    href: "https://wa.me/5516997639921",
   },
-  { 
-    value: 'suporte@psicoapp.com.br', 
+  {
+    value: "suporte@psicoapp.com.br",
     icon: <Mail size={18} />,
-    href: 'mailto:suporte@psicoapp.com.br'
+    href: "mailto:suporte@psicoapp.com.br",
   },
 ];
 
@@ -94,11 +95,19 @@ export default function MobileSidebar() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setUser({
-      id: '1',
-      name: 'João Psicólogo',
-      role: 'Paciente', // Troque para 'Psicologo' para testar como psicólogo
-    });
+    async function fetchProfile() {
+      const profile = (await api.get("/login")) as {
+        id: string;
+        nome: string;
+        role: string;
+      };
+      setUser({
+        id: profile.id,
+        name: profile.nome,
+        role: profile.role as UserRole,
+      });
+    }
+    fetchProfile();
   }, []);
 
   if (!user) return null;
@@ -107,13 +116,13 @@ export default function MobileSidebar() {
   const filteredMenu = allMenuItems
     .filter((item) => item.roles.includes(user.role))
     .map((item) => {
-      if (item.name === 'Atendimentos') {
+      if (item.name === "Atendimentos") {
         return {
           ...item,
           href:
-            user.role === 'Psicologo'
-              ? '/dashboard/appointments/psychologist'
-              : '/dashboard/appointments/patient',
+            user.role === "Psicologo"
+              ? "/dashboard/appointments/psychologist"
+              : "/dashboard/appointments/patient",
         };
       }
       return item;
@@ -133,7 +142,7 @@ export default function MobileSidebar() {
       {/* Sidebar mobile */}
       <aside
         className={`fixed top-0 left-0 z-50 h-full w-full bg-white px-4 py-6 transform transition-transform duration-300 ${
-          open ? 'translate-x-0' : '-translate-x-full'
+          open ? "translate-x-0" : "-translate-x-full"
         } md:hidden`}
         aria-label="Menu lateral"
       >
@@ -152,7 +161,9 @@ export default function MobileSidebar() {
         </div>
 
         <div>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-2 mb-2">Menu</h2>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-2 mb-2">
+            Menu
+          </h2>
           <ul className="space-y-1">
             {filteredMenu.map((item) => (
               <li key={item.name}>
@@ -170,7 +181,9 @@ export default function MobileSidebar() {
         </div>
 
         <div className="mt-8">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-2 mb-2">Suporte</h2>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-2 mb-2">
+            Suporte
+          </h2>
           <div className="space-y-3">
             {supportInfo.map((item, index) => (
               <div key={index} className="px-3 py-2">

@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import Image from "next/image";
 
 // --- Interfaces (Keep as they are) ---
 interface LoginPayload {
-  email: string;
-  senha: string;
+  username: string;
+  password: string;
 }
 interface LoginResponse {
   access_token: string;
 }
 interface BaseRegisterPayload {
-  name: string;
-  email: string;
-  senha: string;
+  nome: string;
   cpf: string;
   telefone: string;
+  email: string;
+  senha: string;
 }
 interface PatientRegisterPayload extends BaseRegisterPayload {
   dataNascimento: string;
@@ -40,7 +40,7 @@ export default function AuthPage() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [name, setName] = useState("");
+  const [nome, setNome] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
   const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -55,7 +55,7 @@ export default function AuthPage() {
   const clearForm = () => {
     setEmail("");
     setSenha("");
-    setName("");
+    setNome("");
     setConfirmSenha("");
     setCpf("");
     setTelefone("");
@@ -71,27 +71,36 @@ export default function AuthPage() {
 
   // --- API Call Handlers (Keep as they are, including simulated login) ---
   const handleLogin = async () => {
-    alert("Login simulado! (API desativada)");
-    // Actual API call commented out as per previous step
-    // const payload: LoginPayload = { email, senha };
-    // const response = await api.post<LoginResponse, LoginPayload>('/auth', payload);
-    // if (response.access_token) {
-    //   localStorage.setItem('authToken', response.access_token);
-    //   router.push('/dashboard');
-    // } else {
-    //   throw new Error('Login successful, but no access token received.');
-    // }
+    const payload: LoginPayload = { username: email, password: senha };
+    const response = await api.post<LoginResponse, LoginPayload>(
+      "/login",
+      payload
+    );
+    console.log("Login response:", response);
+    if (response.access_token) {
+      localStorage.setItem("authToken", response.access_token);
+      router.push("/dashboard");
+    } else {
+      throw new Error("Login successful, but no access token received.");
+    }
   };
   const handleRegister = async () => {
     if (senha !== confirmSenha) throw new Error("As senhas não coincidem.");
     let endpoint: string;
     let payload: PatientRegisterPayload | PsychologistRegisterPayload;
     if (userType === "patient") {
-      endpoint = "/patients";
-      payload = { name, email, senha, cpf, telefone, dataNascimento };
+      endpoint = "/pacientes";
+      payload = {
+        nome,
+        email,
+        senha,
+        cpf,
+        telefone,
+        dataNascimento: new Date(dataNascimento).toISOString(),
+      };
     } else {
-      endpoint = "/doctors"; // Confirm this endpoint
-      payload = { name, email, senha, cpf, telefone, crp };
+      endpoint = "/psicologos";
+      payload = { nome, email, senha, cpf, telefone, crp };
     }
     await api.post<RegisterResponse, typeof payload>(endpoint, payload);
     alert("Cadastro realizado com sucesso! Faça o login.");
@@ -107,7 +116,10 @@ export default function AuthPage() {
       else await handleRegister();
     } catch (err: any) {
       setError(
-        err.message || `Ocorreu um erro durante o ${authMode === "login" ? "login" : "cadastro"}. Tente novamente.`
+        err.message ||
+          `Ocorreu um erro durante o ${
+            authMode === "login" ? "login" : "cadastro"
+          }. Tente novamente.`
       );
     } finally {
       setLoading(false);
@@ -168,7 +180,9 @@ export default function AuthPage() {
                     {/* Patient Icon */}
                     <svg
                       className={`w-5 h-5 mb-1.5 ${
-                        userType === "patient" ? "text-blue-600" : "text-gray-400"
+                        userType === "patient"
+                          ? "text-blue-600"
+                          : "text-gray-400"
                       }`}
                       fill="none"
                       stroke="currentColor"
@@ -225,7 +239,9 @@ export default function AuthPage() {
                     {/* Psychologist Icon */}
                     <svg
                       className={`w-5 h-5 mb-1.5 ${
-                        userType === "psychologist" ? "text-blue-600" : "text-gray-400"
+                        userType === "psychologist"
+                          ? "text-blue-600"
+                          : "text-gray-400"
                       }`}
                       fill="none"
                       stroke="currentColor"
@@ -261,16 +277,19 @@ export default function AuthPage() {
           )}
 
           {/* --- Auth Form (Cleaned Inputs/Button based on new image) --- */}
-          <form onSubmit={handleSubmit} className={`${authMode === "register" ? "space-y-3" : "space-y-5"}`}>
+          <form
+            onSubmit={handleSubmit}
+            className={`${authMode === "register" ? "space-y-3" : "space-y-5"}`}
+          >
             {/* Registration Fields */}
             {authMode === "register" && (
               <>
                 <CleanInput
                   label="Nome Completo"
                   type="text"
-                  id="name"
-                  value={name}
-                  onChange={setName}
+                  id="nome"
+                  value={nome}
+                  onChange={setNome}
                   required
                   disabled={loading}
                 />
@@ -375,10 +394,12 @@ export default function AuthPage() {
           {/* ------------------------------------------------------------- */}
 
           {/* Toggle Auth Mode (Reduced margin for registration) */}
-          <p className={`text-center text-sm text-gray-600 ${authMode === "register" ? "mt-3" : "mt-6"}`}>
-            {authMode === "login"
-              ? "Não tem uma conta?"
-              : "Já tem uma conta?"}{" "}
+          <p
+            className={`text-center text-sm text-gray-600 ${
+              authMode === "register" ? "mt-3" : "mt-6"
+            }`}
+          >
+            {authMode === "login" ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
             <button
               onClick={toggleAuthMode}
               className="font-medium text-blue-600 hover:underline focus:outline-none"
