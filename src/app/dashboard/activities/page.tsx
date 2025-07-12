@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Calendar, Activity, Star } from 'lucide-react';
-import AddActivityModal from '@/components/modals/AddActivityModal';
-import ActivityCard from '@/components/cards/ActivityCard';
+import { useState, useEffect } from "react";
+import { Plus, Calendar, Activity, Star } from "lucide-react";
+import AddActivityModal from "@/components/modals/AddActivityModal";
+import ActivityCard from "@/components/cards/ActivityCard";
+import { api } from "@/lib/api";
 
 interface Atividade {
   id: string;
@@ -16,55 +17,18 @@ interface Atividade {
   updatedAt: string;
 }
 
-// Simulação de fetch inicial
-const mockAtividades: Atividade[] = [
-  {
-    id: '1',
-    tipo: 'Exercício',
-    descricao: 'Caminhada no parque por 30 minutos',
-    data: new Date().toISOString(),
-    impacto: 4,
-    pacienteId: 'paciente1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    tipo: 'Trabalho',
-    descricao: 'Reunião importante com a equipe',
-    data: new Date().toISOString(),
-    impacto: 3,
-    pacienteId: 'paciente1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    tipo: 'Social',
-    descricao: 'Almoço com amigos',
-    data: new Date(Date.now() - 86400000).toISOString(),
-    impacto: 5,
-    pacienteId: 'paciente1',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '4',
-    tipo: 'Relaxamento',
-    descricao: 'Meditação de 15 minutos',
-    data: new Date(Date.now() - 86400000).toISOString(),
-    impacto: 4,
-    pacienteId: 'paciente1',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  }
-];
-
 export default function ActivitiesPage() {
+  const [user, setUser] = useState<{
+    id: string;
+    nome: string;
+    role: string;
+  } | null>(null);
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingActivity, setEditingActivity] = useState<Atividade | null>(null);
+  const [editingActivity, setEditingActivity] = useState<Atividade | null>(
+    null
+  );
 
   useEffect(() => {
     fetchAtividades();
@@ -73,29 +37,59 @@ export default function ActivitiesPage() {
   const fetchAtividades = async () => {
     setLoading(true);
     try {
-      // Aqui você trocará pelo fetch real da API
-      setTimeout(() => {
-        setAtividades(mockAtividades);
-        setLoading(false);
-      }, 500);
+      const profile = (await api.get("/login")) as {
+        id: string;
+        nome: string;
+        role: string;
+      };
+      setUser(profile);
+
+      const atividades = (await api.get(
+        `/atividades/paciente/${profile.id}`
+      )) as Atividade[];
+
+      setAtividades(atividades);
+      setLoading(false);
     } catch (error) {
-      console.error('Erro ao buscar atividades:', error);
+      console.error("Erro ao buscar atividades:", error);
       setLoading(false);
     }
   };
+  const handleActivityAdded = async (novaAtividade: Partial<Atividade>) => {
+    try {
+      if (editingActivity) {
+        // Editar atividade existente - não enviar createdAt/updatedAt
+        const activityToUpdate = {
+          id: editingActivity.id,
+          tipo: novaAtividade.tipo!,
+          descricao: novaAtividade.descricao!,
+          data: novaAtividade.data!,
+          impacto: novaAtividade.impacto!,
+          pacienteId: novaAtividade.pacienteId!,
+        };
 
-  const handleActivityAdded = (novaAtividade: Atividade) => {
-    if (editingActivity) {
-      // Editando atividade existente
-      setAtividades(prev => prev.map(a => 
-        a.id === editingActivity.id ? { ...novaAtividade, id: editingActivity.id } : a
-      ));
-      setEditingActivity(null);
-    } else {
-      // Adicionando nova atividade
-      setAtividades(prev => [novaAtividade, ...prev]);
+        await api.patch(`/atividades/${editingActivity.id}`, activityToUpdate);
+
+        setEditingActivity(null);
+      } else {
+        // Criar nova atividade - não enviar id, createdAt, updatedAt
+        const activityToCreate = {
+          tipo: novaAtividade.tipo!,
+          descricao: novaAtividade.descricao!,
+          data: novaAtividade.data!,
+          impacto: novaAtividade.impacto!,
+          pacienteId: user?.id || "",
+        };
+
+        await api.post("/atividades", activityToCreate);
+      }
+
+      setIsModalOpen(false);
+      // Refaz a consulta completa para garantir dados atualizados
+      await fetchAtividades();
+    } catch (error) {
+      console.error("Erro ao salvar atividade:", error);
     }
-    setIsModalOpen(false);
   };
 
   const handleEditActivity = (atividade: Atividade) => {
@@ -103,20 +97,33 @@ export default function ActivitiesPage() {
     setIsModalOpen(true);
   };
 
+  const handleDeleteActivity = async (atividadeId: string) => {
+    try {
+      await api.delete(`/atividades/${atividadeId}`);
+      // Refaz a consulta completa para garantir dados atualizados
+      await fetchAtividades();
+    } catch (error) {
+      console.error("Erro ao deletar atividade:", error);
+    }
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingActivity(null);
   };
 
-  const atividadesHoje = atividades.filter(atividade => {
-    const hoje = new Date().toISOString().split('T')[0];
-    const dataAtividade = atividade.data.split('T')[0];
+  const atividadesHoje = atividades.filter((atividade) => {
+    const hoje = new Date().toISOString().split("T")[0];
+    const dataAtividade = atividade.data?.split("T")[0];
     return dataAtividade === hoje;
   });
 
-  const impactoMedio = atividades.length > 0 
-    ? (atividades.reduce((acc, a) => acc + a.impacto, 0) / atividades.length).toFixed(1)
-    : '0';
+  const impactoMedio =
+    atividades.length > 0
+      ? (
+          atividades.reduce((acc, a) => acc + a.impacto, 0) / atividades.length
+        ).toFixed(1)
+      : "0";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -125,10 +132,14 @@ export default function ActivitiesPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Minhas Atividades</h1>
-              <p className="mt-2 text-gray-600">Registre e acompanhe o impacto das suas atividades diárias</p>
+              <h1 className="text-4xl font-bold text-gray-900">
+                Minhas Atividades
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Registre e acompanhe o impacto das suas atividades diárias
+              </p>
             </div>
-            <button 
+            <button
               className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
               onClick={() => setIsModalOpen(true)}
             >
@@ -146,8 +157,12 @@ export default function ActivitiesPage() {
                 <Activity className="w-6 h-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Atividades Hoje</p>
-                <p className="text-3xl font-bold text-gray-900">{atividadesHoje.length}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Atividades Hoje
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {atividadesHoje.length}
+                </p>
               </div>
             </div>
           </div>
@@ -158,8 +173,12 @@ export default function ActivitiesPage() {
                 <Star className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Impacto Médio</p>
-                <p className="text-3xl font-bold text-gray-900">{impactoMedio}/5</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Impacto Médio
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {impactoMedio}/5
+                </p>
               </div>
             </div>
           </div>
@@ -170,8 +189,12 @@ export default function ActivitiesPage() {
                 <Calendar className="w-6 h-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Registrado</p>
-                <p className="text-3xl font-bold text-gray-900">{atividades.length}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Registrado
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {atividades.length}
+                </p>
               </div>
             </div>
           </div>
@@ -196,9 +219,13 @@ export default function ActivitiesPage() {
             ) : atividadesHoje.length === 0 ? (
               <div className="p-8 text-center">
                 <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma atividade registrada hoje</h3>
-                <p className="text-gray-600 mb-6">Comece registrando sua primeira atividade do dia.</p>
-                <button 
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Nenhuma atividade registrada hoje
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Comece registrando sua primeira atividade do dia.
+                </p>
+                <button
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                   onClick={() => setIsModalOpen(true)}
                 >
@@ -209,10 +236,11 @@ export default function ActivitiesPage() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {atividadesHoje.map((atividade) => (
-                  <ActivityCard 
-                    key={atividade.id} 
+                  <ActivityCard
+                    key={atividade.id}
                     atividade={atividade}
                     onEdit={handleEditActivity}
+                    onDelete={handleDeleteActivity}
                   />
                 ))}
               </div>
@@ -220,9 +248,9 @@ export default function ActivitiesPage() {
           </div>
 
           {/* Atividades Anteriores */}
-          {atividades.filter(a => {
-            const hoje = new Date().toISOString().split('T')[0];
-            const dataAtividade = a.data.split('T')[0];
+          {atividades.filter((a) => {
+            const hoje = new Date().toISOString().split("T")[0];
+            const dataAtividade = a.data?.split("T")[0];
             return dataAtividade !== hoje;
           }).length > 0 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -234,17 +262,23 @@ export default function ActivitiesPage() {
               </div>
               <div className="divide-y divide-gray-200">
                 {atividades
-                  .filter(a => {
-                    const hoje = new Date().toISOString().split('T')[0];
-                    const dataAtividade = a.data.split('T')[0];
+                  .filter((a) => {
+                    const hoje = new Date().toISOString().split("T")[0];
+                    const dataAtividade = a.data?.split("T")[0];
                     return dataAtividade !== hoje;
                   })
-                  .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(b.data || "").getTime() -
+                      new Date(a.data || "").getTime()
+                  )
                   .map((atividade) => (
-                    <ActivityCard 
-                      key={atividade.id} 
+                    <ActivityCard
+                      key={atividade.id}
                       atividade={atividade}
                       onEdit={handleEditActivity}
+                      onDelete={handleDeleteActivity}
+                      showFullDate={true}
                     />
                   ))}
               </div>
@@ -254,11 +288,12 @@ export default function ActivitiesPage() {
       </div>
 
       {/* Modal */}
-      <AddActivityModal 
+      <AddActivityModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onActivityAdded={handleActivityAdded}
         editingActivity={editingActivity}
+        pacienteId={user?.id}
       />
     </div>
   );

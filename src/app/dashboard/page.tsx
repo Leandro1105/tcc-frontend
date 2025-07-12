@@ -32,92 +32,30 @@ import {
   Target,
 } from "lucide-react";
 import { api } from "@/lib/api";
+interface DashboardPaciente {
+  consultas: Array<{ name: string; consultas: number }>;
+  humores: Array<{ name: string; value: number }>;
+  humorTendencia: Array<{ data: string; humor: number }>;
+  atividades: Array<{ tipo: string; quantidade: number; impacto: number }>;
+  progressoSemanal: Array<{
+    semana: string;
+    atividades: number;
+    humor: number;
+  }>;
+}
 
-const mockConsultas = [
-  { name: "Jan", consultas: 2 },
-  { name: "Fev", consultas: 1 },
-  { name: "Mar", consultas: 3 },
-  { name: "Abr", consultas: 4 },
-  { name: "Mai", consultas: 2 },
-  { name: "Jun", consultas: 5 },
-];
-
-const mockHumores = [
-  { name: "Feliz", value: 15 },
-  { name: "Triste", value: 8 },
-  { name: "Ansioso", value: 12 },
-  { name: "Animado", value: 10 },
-  { name: "Cansado", value: 5 },
-];
-
-const mockHumorTendencia = [
-  { data: "Sem 1", humor: 6 },
-  { data: "Sem 2", humor: 5 },
-  { data: "Sem 3", humor: 7 },
-  { data: "Sem 4", humor: 8 },
-  { data: "Sem 5", humor: 6 },
-  { data: "Sem 6", humor: 9 },
-];
-
-const mockAtividades = [
-  { tipo: "Exercício", quantidade: 12, impacto: 8 },
-  { tipo: "Meditação", quantidade: 8, impacto: 9 },
-  { tipo: "Leitura", quantidade: 15, impacto: 7 },
-  { tipo: "Caminhada", quantidade: 20, impacto: 8 },
-  { tipo: "Socialização", quantidade: 6, impacto: 9 },
-];
-
-const mockProgressoSemanal = [
-  { semana: "S1", atividades: 3, humor: 6 },
-  { semana: "S2", atividades: 5, humor: 7 },
-  { semana: "S3", atividades: 4, humor: 6 },
-  { semana: "S4", atividades: 6, humor: 8 },
-];
-
-// Dados mockados para Psicólogo
-const mockPacientesPorMes = [
-  { name: "Jan", pacientes: 8, receita: 1200 },
-  { name: "Fev", receita: 1350, pacientes: 9 },
-  { name: "Mar", receita: 1500, pacientes: 10 },
-  { name: "Abr", receita: 1800, pacientes: 12 },
-  { name: "Mai", receita: 1650, pacientes: 11 },
-  { name: "Jun", receita: 2100, pacientes: 14 },
-];
-
-const mockHumoresPacientes = [
-  { name: "Feliz", value: 35 },
-  { name: "Triste", value: 15 },
-  { name: "Ansioso", value: 25 },
-  { name: "Animado", value: 20 },
-  { name: "Cansado", value: 5 },
-];
-
-const mockConsultasPorDiaSemana = [
-  { dia: "Seg", consultas: 8 },
-  { dia: "Ter", consultas: 12 },
-  { dia: "Qua", consultas: 10 },
-  { dia: "Qui", consultas: 15 },
-  { dia: "Sex", consultas: 14 },
-  { dia: "Sáb", consultas: 6 },
-  { dia: "Dom", consultas: 2 },
-];
-
-const mockEvolucaoPacientes = [
-  { mes: "Jan", novos: 3, ativos: 8, total: 8 },
-  { mes: "Fev", novos: 2, ativos: 9, total: 10 },
-  { mes: "Mar", novos: 4, ativos: 10, total: 14 },
-  { mes: "Abr", novos: 3, ativos: 12, total: 17 },
-  { mes: "Mai", novos: 1, ativos: 11, total: 18 },
-  { mes: "Jun", novos: 5, ativos: 14, total: 23 },
-];
-
-const mockPerformanceMensal = [
-  { categoria: "Pontualidade", pontuacao: 95 },
-  { categoria: "Satisfação", pontuacao: 88 },
-  { categoria: "Frequência", pontuacao: 92 },
-  { categoria: "Melhoria", pontuacao: 85 },
-  { categoria: "Engajamento", pontuacao: 90 },
-];
+interface DashboardPsicologo {
+  pacientesPorMes: Array<{ name: string; pacientes: number; receita: number }>;
+  humoresPacientes: Array<{ name: string; value: number }>;
+  consultasPorDiaSemana: Array<{ dia: string; consultas: number }>;
+  evolucaoPacientes: Array<{
+    mes: string;
+    novos: number;
+    ativos: number;
+    total: number;
+  }>;
+  performanceMensal: Array<{ categoria: string; pontuacao: number }>;
+}
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
 
@@ -153,19 +91,25 @@ export default function DashboardHomePage() {
       setUser(profile);
 
       if (profile.role === "Paciente") {
-        console.log("Carregando dados do Paciente"); // Para debug
-        setConsultas(mockConsultas);
-        setHumores(mockHumores);
-        setHumorTendencia(mockHumorTendencia);
-        setAtividades(mockAtividades);
-        setProgressoSemanal(mockProgressoSemanal);
+        const data = (await api.get(
+          `/dashboard/paciente/${profile.id}`
+        )) as DashboardPaciente;
+        console.log("Dados do Paciente:", data);
+        console.log("usuario:", profile);
+        setConsultas(data.consultas);
+        setHumores(data.humores);
+        setHumorTendencia(data.humorTendencia);
+        setAtividades(data.atividades);
+        setProgressoSemanal(data.progressoSemanal);
       } else if (profile.role === "Psicologo") {
-        console.log("Carregando dados do psicólogo"); // Para debug
-        setPacientesPorMes(mockPacientesPorMes);
-        setHumoresPacientes(mockHumoresPacientes);
-        setConsultasPorDia(mockConsultasPorDiaSemana);
-        setEvolucaoPacientes(mockEvolucaoPacientes);
-        setPerformanceMensal(mockPerformanceMensal);
+        const data = (await api.get(
+          `/dashboard/psicologo/${profile.id}`
+        )) as DashboardPsicologo;
+        setPacientesPorMes(data.pacientesPorMes);
+        setHumoresPacientes(data.humoresPacientes);
+        setConsultasPorDia(data.consultasPorDiaSemana);
+        setEvolucaoPacientes(data.evolucaoPacientes);
+        setPerformanceMensal(data.performanceMensal);
       }
     }
     fetchData();
