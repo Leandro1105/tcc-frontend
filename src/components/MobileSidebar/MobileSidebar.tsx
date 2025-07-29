@@ -16,7 +16,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { retrieveUserData } from "@/app/utils/retrieveUserData";
 
 type UserRole = "Psicologo" | "Paciente";
 
@@ -96,11 +96,7 @@ export default function MobileSidebar() {
 
   useEffect(() => {
     async function fetchProfile() {
-      const profile = (await api.get("/login")) as {
-        id: string;
-        nome: string;
-        role: string;
-      };
+      const profile = await retrieveUserData();
       setUser({
         id: profile.id,
         name: profile.nome,

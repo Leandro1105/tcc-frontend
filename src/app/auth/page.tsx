@@ -4,38 +4,18 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import Image from "next/image";
-
-// --- Interfaces (Keep as they are) ---
-interface LoginPayload {
-  username: string;
-  password: string;
-}
-interface LoginResponse {
-  access_token: string;
-}
-interface BaseRegisterPayload {
-  nome: string;
-  cpf: string;
-  telefone: string;
-  email: string;
-  senha: string;
-}
-interface PatientRegisterPayload extends BaseRegisterPayload {
-  dataNascimento: string;
-}
-interface PsychologistRegisterPayload extends BaseRegisterPayload {
-  crp: string;
-}
-interface RegisterResponse {
-  id: string /* other fields... */;
-}
-// --------------------------------------
+import {
+  LoginPayload,
+  LoginResponse,
+  PatientRegisterPayload,
+  PsychologistRegisterPayload,
+  RegisterResponse,
+} from "./interfaces";
 
 type UserType = "patient" | "psychologist";
 type AuthMode = "login" | "register";
 
 export default function AuthPage() {
-  // --- State Variables (Keep as they are) ---
   const [userType, setUserType] = useState<UserType>("patient");
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -49,9 +29,7 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  // -----------------------------------------
 
-  // --- Helper Functions (Keep as they are) ---
   const clearForm = () => {
     setEmail("");
     setSenha("");
@@ -67,9 +45,7 @@ export default function AuthPage() {
     setAuthMode(authMode === "login" ? "register" : "login");
     clearForm();
   };
-  // -------------------------------------------
 
-  // --- API Call Handlers (Keep as they are, including simulated login) ---
   const handleLogin = async () => {
     const payload: LoginPayload = { username: email, password: senha };
     const response = await api.post<LoginResponse, LoginPayload>(
@@ -84,6 +60,7 @@ export default function AuthPage() {
       throw new Error("Login successful, but no access token received.");
     }
   };
+
   const handleRegister = async () => {
     if (senha !== confirmSenha) throw new Error("As senhas não coincidem.");
     let endpoint: string;
@@ -107,6 +84,7 @@ export default function AuthPage() {
     setAuthMode("login");
     clearForm();
   };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -114,20 +92,17 @@ export default function AuthPage() {
     try {
       if (authMode === "login") await handleLogin();
       else await handleRegister();
-    } catch (err: any) {
+    } catch {
       setError(
-        err.message ||
-          `Ocorreu um erro durante o ${
-            authMode === "login" ? "login" : "cadastro"
-          }. Tente novamente.`
+        `Ocorreu um erro durante o ${
+          authMode === "login" ? "login" : "cadastro"
+        }. Tente novamente.`
       );
     } finally {
       setLoading(false);
     }
   };
-  // ----------------------------------------------------------------------
 
-  // --- Render Structure using the generated illustration ---
   return (
     <div className="flex min-h-screen w-screen bg-white">
       {/* Left Side: Illustration with light blue background */}

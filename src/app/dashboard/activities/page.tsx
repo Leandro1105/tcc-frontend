@@ -5,24 +5,11 @@ import { Plus, Calendar, Activity, Star } from "lucide-react";
 import AddActivityModal from "@/components/modals/AddActivityModal";
 import ActivityCard from "@/components/cards/ActivityCard";
 import { api } from "@/lib/api";
-
-interface Atividade {
-  id: string;
-  tipo: string;
-  descricao: string;
-  data: string;
-  impacto: number;
-  pacienteId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { retrieveUserData, User } from "@/app/utils/retrieveUserData";
+import { Atividade } from "./interfaces";
 
 export default function ActivitiesPage() {
-  const [user, setUser] = useState<{
-    id: string;
-    nome: string;
-    role: string;
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,11 +24,7 @@ export default function ActivitiesPage() {
   const fetchAtividades = async () => {
     setLoading(true);
     try {
-      const profile = (await api.get("/login")) as {
-        id: string;
-        nome: string;
-        role: string;
-      };
+      const profile = await retrieveUserData();
       setUser(profile);
 
       const atividades = (await api.get(
@@ -55,6 +38,7 @@ export default function ActivitiesPage() {
       setLoading(false);
     }
   };
+
   const handleActivityAdded = async (novaAtividade: Partial<Atividade>) => {
     try {
       if (editingActivity) {
@@ -85,7 +69,6 @@ export default function ActivitiesPage() {
       }
 
       setIsModalOpen(false);
-      // Refaz a consulta completa para garantir dados atualizados
       await fetchAtividades();
     } catch (error) {
       console.error("Erro ao salvar atividade:", error);
@@ -100,7 +83,6 @@ export default function ActivitiesPage() {
   const handleDeleteActivity = async (atividadeId: string) => {
     try {
       await api.delete(`/atividades/${atividadeId}`);
-      // Refaz a consulta completa para garantir dados atualizados
       await fetchAtividades();
     } catch (error) {
       console.error("Erro ao deletar atividade:", error);

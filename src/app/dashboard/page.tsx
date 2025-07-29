@@ -32,61 +32,51 @@ import {
   Target,
 } from "lucide-react";
 import { api } from "@/lib/api";
-interface DashboardPaciente {
-  consultas: Array<{ name: string; consultas: number }>;
-  humores: Array<{ name: string; value: number }>;
-  humorTendencia: Array<{ data: string; humor: number }>;
-  atividades: Array<{ tipo: string; quantidade: number; impacto: number }>;
-  progressoSemanal: Array<{
-    semana: string;
-    atividades: number;
-    humor: number;
-  }>;
-}
-
-interface DashboardPsicologo {
-  pacientesPorMes: Array<{ name: string; pacientes: number; receita: number }>;
-  humoresPacientes: Array<{ name: string; value: number }>;
-  consultasPorDiaSemana: Array<{ dia: string; consultas: number }>;
-  evolucaoPacientes: Array<{
-    mes: string;
-    novos: number;
-    ativos: number;
-    total: number;
-  }>;
-  performanceMensal: Array<{ categoria: string; pontuacao: number }>;
-}
+import { retrieveUserData, User } from "../utils/retrieveUserData";
+import {
+  DashboardPaciente,
+  DashboardPsicologo,
+  ConsultaPorMes,
+  HumorDistribuicao,
+  HumorTendencia,
+  AtividadeImpacto,
+  ProgressoSemanal,
+  PacienteReceita,
+  ConsultaPorDia,
+  EvolucaoPaciente,
+  PerformanceMensal,
+} from "./interfaces";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
 
 export default function DashboardHomePage() {
-  const [user, setUser] = useState<{
-    id: string;
-    nome: string;
-    role: string;
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // Estados para dados do Paciente
-  const [consultas, setConsultas] = useState<any[]>([]);
-  const [humores, setHumores] = useState<any[]>([]);
-  const [humorTendencia, setHumorTendencia] = useState<any[]>([]);
-  const [atividades, setAtividades] = useState<any[]>([]);
-  const [progressoSemanal, setProgressoSemanal] = useState<any[]>([]);
+  const [consultas, setConsultas] = useState<ConsultaPorMes[]>([]);
+  const [humores, setHumores] = useState<HumorDistribuicao[]>([]);
+  const [humorTendencia, setHumorTendencia] = useState<HumorTendencia[]>([]);
+  const [atividades, setAtividades] = useState<AtividadeImpacto[]>([]);
+  const [progressoSemanal, setProgressoSemanal] = useState<ProgressoSemanal[]>(
+    []
+  );
 
   // Estados para dados do psicólogo
-  const [pacientesPorMes, setPacientesPorMes] = useState<any[]>([]);
-  const [humoresPacientes, setHumoresPacientes] = useState<any[]>([]);
-  const [consultasPorDia, setConsultasPorDia] = useState<any[]>([]);
-  const [evolucaoPacientes, setEvolucaoPacientes] = useState<any[]>([]);
-  const [performanceMensal, setPerformanceMensal] = useState<any[]>([]);
+  const [pacientesPorMes, setPacientesPorMes] = useState<PacienteReceita[]>([]);
+  const [humoresPacientes, setHumoresPacientes] = useState<HumorDistribuicao[]>(
+    []
+  );
+  const [consultasPorDia, setConsultasPorDia] = useState<ConsultaPorDia[]>([]);
+  const [evolucaoPacientes, setEvolucaoPacientes] = useState<
+    EvolucaoPaciente[]
+  >([]);
+  const [performanceMensal, setPerformanceMensal] = useState<
+    PerformanceMensal[]
+  >([]);
 
   useEffect(() => {
     async function fetchData() {
-      const profile = (await api.get("/login")) as {
-        id: string;
-        nome: string;
-        role: string;
-      };
+      const profile = await retrieveUserData();
 
       setUser(profile);
 
@@ -200,7 +190,7 @@ export default function DashboardHomePage() {
                 <div>
                   <p className="text-xs text-gray-500">Humor Médio</p>
                   <p className="text-lg font-bold text-gray-800">
-                    {estatisticas.humorMedio}/10
+                    {estatisticas.humorMedio}/5
                   </p>
                 </div>
               </div>
@@ -218,7 +208,7 @@ export default function DashboardHomePage() {
                 <div>
                   <p className="text-xs text-gray-500">Impacto Médio</p>
                   <p className="text-lg font-bold text-gray-800">
-                    {estatisticas.impactoMedio}/10
+                    {estatisticas.impactoMedio}/5
                   </p>
                 </div>
               </div>

@@ -1,0 +1,42 @@
+export const moodOptions = [
+  {
+    value: 1,
+    emoji: "/angry.gif",
+    label: "Muito Ruim",
+    color: "bg-red-50",
+    border: "border-red-100",
+    bgColor: "bg-red-500",
+  },
+  {
+    value: 2,
+    emoji: "/sad.gif",
+    label: "Ruim",
+    color: "bg-orange-50",
+    border: "border-orange-100",
+    bgColor: "bg-orange-500",
+  },
+  {
+    value: 3,
+    emoji: "/neutral.gif",
+    label: "Neutro",
+    color: "bg-gray-50",
+    border: "border-gray-100",
+    bgColor: "bg-gray-500",
+  },
+  {
+    value: 4,
+    emoji: "/happy.gif",
+    label: "Bom",
+    color: "bg-green-50",
+    border: "border-green-100",
+    bgColor: "bg-green-500",
+  },
+  {
+    value: 5,
+    emoji: "/very-happy.gif",
+    label: "Muito Bom",
+    color: "bg-blue-50",
+    border: "border-blue-100",
+    bgColor: "bg-blue-500",
+  },
+];
