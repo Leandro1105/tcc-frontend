@@ -8,8 +8,11 @@ interface Psychologist {
   id: string;
   nome: string;
   crp: string;
-  pacientes?: { id: string }[];
-  atendimentos?: { id: string }[];
+  pacientes: number;
+  atendimentos: number;
+  endereco?: string;
+  numero?: string;
+  apresentacao?: string;
 }
 
 interface PsychologistCardProps {
@@ -22,8 +25,8 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
-  const pacientesCount = psychologist.pacientes?.length || 0;
-  const atendimentosCount = psychologist.atendimentos?.length || 0;
+  const pacientesCount = psychologist.pacientes || 0;
+  const atendimentosCount = psychologist.atendimentos || 0;
 
   const handleViewProfile = () => {
     setIsViewModalOpen(true);
@@ -101,8 +104,7 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
       <ScheduleAppointmentModal
         isOpen={isScheduleModalOpen}
         onClose={handleCloseScheduleModal}
-        psychologist={psychologist}
-        pacienteId="paciente123" // TODO: Pegar do contexto/auth
+        psychologistInfo={psychologist}
       />
     </>
   );

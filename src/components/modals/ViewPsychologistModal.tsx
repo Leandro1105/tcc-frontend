@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Stethoscope } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Users, Stethoscope } from "lucide-react";
 
 interface Psychologist {
   id: string;
   nome: string;
   crp: string;
+  endereco?: string;
+  numero?: string;
   apresentacao?: string;
-  pacientes?: { id: string }[];
-  atendimentos?: { id: string }[];
+  pacientes: number;
+  atendimentos: number;
 }
 
 interface ViewPsychologistModalProps {
@@ -19,7 +21,7 @@ interface ViewPsychologistModalProps {
 const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
   isOpen,
   onClose,
-  psychologist
+  psychologist,
 }) => {
   const [animatedPacientes, setAnimatedPacientes] = useState(0);
   const [animatedAtendimentos, setAnimatedAtendimentos] = useState(0);
@@ -29,8 +31,8 @@ const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
       setAnimatedPacientes(0);
       setAnimatedAtendimentos(0);
 
-      const pacientesCount = psychologist.pacientes?.length || 0;
-      const atendimentosCount = psychologist.atendimentos?.length || 0;
+      const pacientesCount = psychologist.pacientes || 0;
+      const atendimentosCount = psychologist.atendimentos || 0;
 
       const duration = 1000;
       const steps = 60;
@@ -59,15 +61,23 @@ const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
   const maxPacientes = 50;
   const maxAtendimentos = 200;
 
-  const pacientesPercentage = Math.min((animatedPacientes / maxPacientes) * 100, 100);
-  const atendimentosPercentage = Math.min((animatedAtendimentos / maxAtendimentos) * 100, 100);
+  const pacientesPercentage = Math.min(
+    (animatedPacientes / maxPacientes) * 100,
+    100
+  );
+  const atendimentosPercentage = Math.min(
+    (animatedAtendimentos / maxAtendimentos) * 100,
+    100
+  );
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white/90 backdrop-blur rounded-2xl p-8 w-full max-w-lg shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">Perfil do Psicólogo</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Perfil do Psicólogo
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -79,13 +89,23 @@ const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
         {/* Conteúdo */}
         <div className="space-y-6">
           <div>
-            <p className="text-xl font-semibold text-gray-900">{psychologist.nome}</p>
+            <p className="text-xl font-semibold text-gray-900">
+              {psychologist.nome}
+            </p>
             <p className="text-sm text-gray-500">CRP: {psychologist.crp}</p>
+            <p className="text-sm text-gray-500">
+              Endereço: {psychologist.endereco}
+            </p>
+            <p className="text-sm text-gray-500">
+              Número: {psychologist.numero}
+            </p>
           </div>
 
           {psychologist.apresentacao && (
             <div>
-              <p className="text-gray-700 leading-relaxed text-sm">{psychologist.apresentacao}</p>
+              <p className="text-gray-700 leading-relaxed text-sm">
+                {psychologist.apresentacao}
+              </p>
             </div>
           )}
 
@@ -97,7 +117,9 @@ const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
                   <Users className="w-4 h-4 text-blue-500" />
                   <span>Pacientes</span>
                 </div>
-                <span className="text-base font-medium text-gray-800">{animatedPacientes}</span>
+                <span className="text-base font-medium text-gray-800">
+                  {animatedPacientes}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -114,7 +136,9 @@ const ViewPsychologistModal: React.FC<ViewPsychologistModalProps> = ({
                   <Stethoscope className="w-4 h-4 text-green-500" />
                   <span>Atendimentos</span>
                 </div>
-                <span className="text-base font-medium text-gray-800">{animatedAtendimentos}</span>
+                <span className="text-base font-medium text-gray-800">
+                  {animatedAtendimentos}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
