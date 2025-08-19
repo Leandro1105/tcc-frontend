@@ -4,15 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard,
-  Users,
   CalendarDays,
   Activity,
   Heart,
   Smile,
-  BarChart,
   Wallet,
   MessageCircle,
   Mail,
+  BarChart,
 } from "lucide-react";
 import { retrieveUserData } from "@/app/utils/retrieveUserData";
 
@@ -32,9 +31,27 @@ const allMenuItems = [
     roles: ["Psicologo", "Paciente"],
   },
   {
-    name: "Pacientes",
+    name: "Dashboard Financeiro",
+    href: "/dashboard/financial",
+    icon: <Wallet size={18} />,
+    roles: ["Psicologo"],
+  },
+  {
+    name: "Atendimentos",
+    href: "", // será definido dinamicamente
+    icon: <CalendarDays size={18} />,
+    roles: ["Psicologo", "Paciente"],
+  },
+  {
+    name: "Atividades", //Atividades dos pacientes visão psicólogo
     href: "/dashboard/patients",
-    icon: <Users size={18} />,
+    icon: <Activity size={18} />,
+    roles: ["Psicologo"],
+  },
+  {
+    name: "Humores",
+    href: "/dashboard/patient-status",
+    icon: <BarChart size={18} />,
     roles: ["Psicologo"],
   },
   {
@@ -42,12 +59,6 @@ const allMenuItems = [
     href: "/dashboard/psychologists",
     icon: <Heart size={18} />,
     roles: ["Paciente"],
-  },
-  {
-    name: "Atendimentos",
-    href: "", // será definido dinamicamente
-    icon: <CalendarDays size={18} />,
-    roles: ["Psicologo", "Paciente"],
   },
   {
     name: "Atividades",
@@ -62,16 +73,10 @@ const allMenuItems = [
     roles: ["Paciente"],
   },
   {
-    name: "Status",
-    href: "/dashboard/patient-status",
-    icon: <BarChart size={18} />,
-    roles: ["Psicologo"],
-  },
-  {
-    name: "Financeiro",
-    href: "/dashboard/financial",
+    name: "Pagamentos",
+    href: "",
     icon: <Wallet size={18} />,
-    roles: ["Psicologo"],
+    roles: ["Psicologo", "Paciente"],
   },
 ];
 
@@ -105,7 +110,7 @@ export default function Sidebar() {
 
   if (!user) return null;
 
-  // Ajusta o href de Atendimentos conforme o papel do usuário
+  // Ajusta o href de Atendimentos e Pagamentos conforme o papel do usuário
   const filteredMenu = allMenuItems
     .filter((item) => item.roles.includes(user.role))
     .map((item) => {
@@ -116,6 +121,15 @@ export default function Sidebar() {
             user.role === "Psicologo"
               ? "/dashboard/appointments/psychologist"
               : "/dashboard/appointments/patient",
+        };
+      }
+      if (item.name === "Pagamentos") {
+        return {
+          ...item,
+          href:
+            user.role === "Psicologo"
+              ? "/dashboard/financial/psychologist"
+              : "/dashboard/financial/patient",
         };
       }
       return item;

@@ -44,7 +44,7 @@ export default function FinancialReportsPage() {
       try {
         const profile = await retrieveUserData();
         const payments = (await api.get(
-          `/financeiro/psicologo/${profile.id}`
+          `/dashboard/financeiro/psicologo/${profile.id}`
         )) as Pagamento[];
 
         setPagamentos(payments);
