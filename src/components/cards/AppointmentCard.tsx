@@ -1,7 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Calendar, Clock, User, CheckCircle, Star, MessageCircle, FileText, Plus } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  User,
+  CheckCircle,
+  Star,
+  MessageCircle,
+  FileText,
+  Plus,
+} from "lucide-react";
 
 // Interface base da API (não altere esta)
 interface Appointment {
@@ -27,7 +35,7 @@ interface Payment {
   data: string;
   dataVencimento: string;
   parcela: number;
-  status: 'Pendente' | 'Pago';
+  status: "Pendente" | "Pago";
   atendimentoId: string;
 }
 
@@ -43,31 +51,28 @@ interface AppointmentCardProps {
   proximaSessao?: string;
 }
 
-export default function AppointmentCard({ 
-  appointment, 
-  onSchedulePayment, 
+export default function AppointmentCard({
+  appointment,
   onScheduleNewSession,
   showActions = true,
-  // Campos extras
   avaliacao,
   temAnotacoes,
-  proximaSessao
+  proximaSessao,
 }: AppointmentCardProps) {
-  
   // Função para formatar data
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
   // Função para formatar horário
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -75,40 +80,54 @@ export default function AppointmentCard({
   const getSessionTimeText = (dateString: string) => {
     const sessionDate = new Date(dateString);
     const now = new Date();
-    const diffInDays = Math.floor((sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const diffInDays = Math.floor(
+      (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     // Sessões futuras (positivo)
     if (diffInDays > 0) {
-      if (diffInDays === 1) return 'Amanhã';
+      if (diffInDays === 1) return "Amanhã";
       if (diffInDays < 7) return `Em ${diffInDays} dias`;
-      if (diffInDays < 30) return `Em ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`;
-      return `Em ${Math.floor(diffInDays / 30)} mês${Math.floor(diffInDays / 30) > 1 ? 'es' : ''}`;
+      if (diffInDays < 30)
+        return `Em ${Math.floor(diffInDays / 7)} semana${
+          Math.floor(diffInDays / 7) > 1 ? "s" : ""
+        }`;
+      return `Em ${Math.floor(diffInDays / 30)} mês${
+        Math.floor(diffInDays / 30) > 1 ? "es" : ""
+      }`;
     }
-    
+
     // Sessão hoje
-    if (diffInDays === 0) return 'Hoje';
-    
+    if (diffInDays === 0) return "Hoje";
+
     // Sessões passadas (negativo)
     const pastDays = Math.abs(diffInDays);
-    if (pastDays === 1) return 'Ontem';
+    if (pastDays === 1) return "Ontem";
     if (pastDays < 7) return `${pastDays} dias atrás`;
-    if (pastDays < 30) return `${Math.floor(pastDays / 7)} semana${Math.floor(pastDays / 7) > 1 ? 's' : ''} atrás`;
-    return `${Math.floor(pastDays / 30)} mês${Math.floor(pastDays / 30) > 1 ? 'es' : ''} atrás`;
+    if (pastDays < 30)
+      return `${Math.floor(pastDays / 7)} semana${
+        Math.floor(pastDays / 7) > 1 ? "s" : ""
+      } atrás`;
+    return `${Math.floor(pastDays / 30)} mês${
+      Math.floor(pastDays / 30) > 1 ? "es" : ""
+    } atrás`;
   };
 
   // Função para determinar a cor do badge baseado no tempo
   const getTimeColor = (dateString: string) => {
     const sessionDate = new Date(dateString);
     const now = new Date();
-    const diffInDays = Math.floor((sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays > 0) return 'text-blue-600 bg-blue-50'; // Futuro - azul
-    if (diffInDays === 0) return 'text-green-600 bg-green-50'; // Hoje - verde
-    return 'text-gray-600 bg-gray-100'; // Passado - cinza
+    const diffInDays = Math.floor(
+      (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffInDays > 0) return "text-blue-600 bg-blue-50"; // Futuro - azul
+    if (diffInDays === 0) return "text-green-600 bg-green-50"; // Hoje - verde
+    return "text-gray-600 bg-gray-100"; // Passado - cinza
   };
 
   const totalPago = appointment.pagamentos
-    .filter(p => p.status === 'Pago')
+    .filter((p) => p.status === "Pago")
     .reduce((sum, p) => sum + p.valor, 0);
 
   return (
@@ -126,7 +145,7 @@ export default function AppointmentCard({
               {formatTime(appointment.data)}
             </span>
           </div>
-          
+
           {/* Informação adicional no lugar do status de pagamento */}
           <div className="flex items-center space-x-2">
             {/* Opção 1: Mostrar avaliação se existir */}
@@ -138,7 +157,7 @@ export default function AppointmentCard({
                 </span>
               </div>
             )}
-            
+
             {/* Opção 2: Mostrar se tem anotações */}
             {temAnotacoes && (
               <div className="flex items-center space-x-1 px-3 py-1 bg-blue-50 rounded-full">
@@ -148,9 +167,13 @@ export default function AppointmentCard({
                 </span>
               </div>
             )}
-            
+
             {/* Opção 3: Tempo relativo da sessão */}
-            <div className={`flex items-center space-x-1 px-3 py-1 rounded-full ${getTimeColor(appointment.data)}`}>
+            <div
+              className={`flex items-center space-x-1 px-3 py-1 rounded-full ${getTimeColor(
+                appointment.data
+              )}`}
+            >
               <Clock className="w-4 h-4" />
               <span className="text-sm font-medium">
                 {getSessionTimeText(appointment.data)}
@@ -162,8 +185,12 @@ export default function AppointmentCard({
         {/* Informações do psicólogo */}
         <div className="flex items-center space-x-2 mb-4 h-6">
           <User className="w-4 h-4 text-gray-500" />
-          <span className="font-medium text-gray-900">{appointment.psicologo.nome}</span>
-          <span className="text-sm text-gray-600">({appointment.psicologo.crp})</span>
+          <span className="font-medium text-gray-900">
+            {appointment.psicologo.nome}
+          </span>
+          <span className="text-sm text-gray-600">
+            ({appointment.psicologo.crp})
+          </span>
         </div>
 
         {/* Informação financeira ou próxima sessão */}
@@ -173,7 +200,8 @@ export default function AppointmentCard({
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-green-700 font-medium">
-                  Próxima sessão: {formatDate(proximaSessao)} às {formatTime(proximaSessao)}
+                  Próxima sessão: {formatDate(proximaSessao)} às{" "}
+                  {formatTime(proximaSessao)}
                 </span>
               </div>
             </div>
@@ -190,10 +218,11 @@ export default function AppointmentCard({
         </div>
 
         {/* Observações */}
-        <div className={`${showActions ? 'mb-4' : 'mb-0'} h-6`}>
+        <div className={`${showActions ? "mb-4" : "mb-0"} h-6`}>
           {appointment.observacoes && (
             <p className="text-sm text-gray-700 truncate">
-              <span className="font-medium">Obs:</span> {appointment.observacoes}
+              <span className="font-medium">Obs:</span>{" "}
+              {appointment.observacoes}
             </p>
           )}
         </div>
@@ -201,15 +230,13 @@ export default function AppointmentCard({
         {/* Ações */}
         {showActions && (
           <div className="flex items-center space-x-3 pt-3 border-t border-gray-100 h-12">
-            <button 
-              className="flex items-center space-x-1 px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-md hover:bg-blue-200 transition-colors"
-            >
+            <button className="flex items-center space-x-1 px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-md hover:bg-blue-200 transition-colors">
               <MessageCircle className="w-4 h-4" />
               <span>Ver detalhes</span>
             </button>
-            
+
             {onScheduleNewSession && (
-              <button 
+              <button
                 onClick={() => onScheduleNewSession(appointment)}
                 className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
               >

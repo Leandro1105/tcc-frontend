@@ -1,0 +1,16 @@
+📄 Termo de Não Responsabilidade Clínica
+Este sistema tem como objetivo fornecer suporte organizacional e auxiliar na comunicação e acompanhamento entre psicólogos e pacientes , por meio de funcionalidades como registro de humor, atividades diárias, histórico de atendimentos e controle financeiro.
+
+ATENÇÃO:
+
+Esta plataforma não realiza diagnósticos, tratamentos ou intervenções psicológicas ou psiquiátricas.
+
+O uso deste sistema não substitui, em nenhuma hipótese, o acompanhamento profissional presencial ou remoto realizado por psicólogos devidamente habilitados.
+
+Todas as informações inseridas pelos usuários são de uso exclusivo do profissional da saúde responsável pelo acompanhamento, cabendo a ele(a) interpretar, validar e utilizar os dados conforme sua prática clínica.
+
+O sistema não possui qualquer responsabilidade sobre condutas clínicas, diagnósticos, decisões terapêuticas ou efeitos resultantes do uso das informações aqui registradas.
+
+As informações confidenciais são protegidas de acordo com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018) e usadas somente com o consentimento do usuário.
+
+O sistema é um instrumento auxiliar e deve ser utilizado sob responsabilidade exclusiva dos profissionais habilitados e dos próprios usuários.

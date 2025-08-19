@@ -25,7 +25,11 @@ export default function AuthPage() {
   const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
   const [crp, setCrp] = useState("");
+  const [endereco, setEndereco] = useState("");
+  const [numero, setNumero] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
+  const [termoAceito, setTermoAceito] = useState(false);
+  const [showTermo, setShowTermo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -38,7 +42,10 @@ export default function AuthPage() {
     setCpf("");
     setTelefone("");
     setCrp("");
+    setEndereco("");
+    setNumero("");
     setDataNascimento("");
+    setTermoAceito(false);
     setError(null);
   };
   const toggleAuthMode = () => {
@@ -63,6 +70,9 @@ export default function AuthPage() {
 
   const handleRegister = async () => {
     if (senha !== confirmSenha) throw new Error("As senhas não coincidem.");
+    if (!termoAceito)
+      throw new Error("Você deve aceitar o termo de responsabilidade.");
+
     let endpoint: string;
     let payload: PatientRegisterPayload | PsychologistRegisterPayload;
     if (userType === "patient") {
@@ -77,7 +87,16 @@ export default function AuthPage() {
       };
     } else {
       endpoint = "/psicologos";
-      payload = { nome, email, senha, cpf, telefone, crp };
+      payload = {
+        nome,
+        email,
+        senha,
+        cpf,
+        telefone,
+        crp,
+        endereco,
+        numero: parseInt(numero) || 0,
+      };
     }
     await api.post<RegisterResponse, typeof payload>(endpoint, payload);
     alert("Cadastro realizado com sucesso! Faça o login.");
@@ -298,15 +317,35 @@ export default function AuthPage() {
                   />
                 )}
                 {userType === "psychologist" && (
-                  <CleanInput
-                    label="CRP"
-                    type="text"
-                    id="crp"
-                    value={crp}
-                    onChange={setCrp}
-                    required
-                    disabled={loading}
-                  />
+                  <>
+                    <CleanInput
+                      label="CRP"
+                      type="text"
+                      id="crp"
+                      value={crp}
+                      onChange={setCrp}
+                      required
+                      disabled={loading}
+                    />
+                    <CleanInput
+                      label="Endereço"
+                      type="text"
+                      id="endereco"
+                      value={endereco}
+                      onChange={setEndereco}
+                      required
+                      disabled={loading}
+                    />
+                    <CleanInput
+                      label="Número"
+                      type="number"
+                      id="numero"
+                      value={numero}
+                      onChange={setNumero}
+                      required
+                      disabled={loading}
+                    />
+                  </>
                 )}
               </>
             )}
@@ -349,6 +388,36 @@ export default function AuthPage() {
               <p className="text-xs text-red-600 text-center pt-1">{error}</p>
             )}
 
+            {/* Terms and Conditions (Register only) */}
+            {authMode === "register" && (
+              <div className="pt-2">
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="termoAceito"
+                    checked={termoAceito}
+                    onChange={(e) => setTermoAceito(e.target.checked)}
+                    className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    disabled={loading}
+                  />
+                  <label
+                    htmlFor="termoAceito"
+                    className="text-sm text-gray-700"
+                  >
+                    Li e aceito o{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowTermo(true)}
+                      className="text-blue-600 hover:underline font-medium"
+                      disabled={loading}
+                    >
+                      termo de responsabilidade
+                    </button>
+                  </label>
+                </div>
+              </div>
+            )}
+
             {/* Submit Button (Reduced margin for registration) */}
             <div className={`${authMode === "register" ? "pt-1" : "pt-2"}`}>
               <button
@@ -386,6 +455,105 @@ export default function AuthPage() {
           {/* ------------------------------------------------------------- */}
         </div>
       </div>
+
+      {/* Modal do Termo de Responsabilidade */}
+      {showTermo && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-xl">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Termo de Não Responsabilidade Clínica
+                </h2>
+                <button
+                  onClick={() => setShowTermo(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={loading}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[60vh] text-sm text-gray-700 space-y-4">
+                <p>
+                  Este sistema tem como objetivo fornecer suporte organizacional
+                  e auxiliar na comunicação e acompanhamento entre psicólogos e
+                  pacientes, por meio de funcionalidades como registro de humor,
+                  atividades diárias, histórico de atendimentos e controle
+                  financeiro.
+                </p>
+                <div>
+                  <p className="font-semibold mb-2">ATENÇÃO:</p>
+                  <ul className="space-y-2 list-disc list-inside">
+                    <li>
+                      Esta plataforma não realiza diagnósticos, tratamentos ou
+                      intervenções psicológicas ou psiquiátricas.
+                    </li>
+                    <li>
+                      O uso deste sistema não substitui, em nenhuma hipótese, o
+                      acompanhamento profissional presencial ou remoto realizado
+                      por psicólogos devidamente habilitados.
+                    </li>
+                    <li>
+                      Todas as informações inseridas pelos usuários são de uso
+                      exclusivo do profissional da saúde responsável pelo
+                      acompanhamento, cabendo a ele(a) interpretar, validar e
+                      utilizar os dados conforme sua prática clínica.
+                    </li>
+                    <li>
+                      O sistema não possui qualquer responsabilidade sobre
+                      condutas clínicas, diagnósticos, decisões terapêuticas ou
+                      efeitos resultantes do uso das informações aqui
+                      registradas.
+                    </li>
+                    <li>
+                      As informações confidenciais são protegidas de acordo com
+                      a Lei Geral de Proteção de Dados (LGPD - Lei nº
+                      13.709/2018) e usadas somente com o consentimento do
+                      usuário.
+                    </li>
+                    <li>
+                      O sistema é um instrumento auxiliar e deve ser utilizado
+                      sob responsabilidade exclusiva dos profissionais
+                      habilitados e dos próprios usuários.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowTermo(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                  disabled={loading}
+                >
+                  Fechar
+                </button>
+                <button
+                  onClick={() => {
+                    setTermoAceito(true);
+                    setShowTermo(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                  disabled={loading}
+                >
+                  Aceitar Termo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

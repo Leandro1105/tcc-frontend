@@ -17,6 +17,8 @@ interface PatientRegisterPayload extends BaseRegisterPayload {
 }
 interface PsychologistRegisterPayload extends BaseRegisterPayload {
   crp: string;
+  endereco: string;
+  numero: number;
 }
 interface RegisterResponse {
   id: string /* other fields... */;
